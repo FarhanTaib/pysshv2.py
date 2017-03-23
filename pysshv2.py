@@ -10,6 +10,7 @@
 #
 # Last modification:
 # Wed 22 Mar 2017 - add get pty to support sudo
+# Thu 23 Mar 2017 - su doest not run properly.. adding quote
 #
 import paramiko
 import cmd
@@ -222,12 +223,15 @@ class RunCommand(cmd.Cmd):
 	sudo_cmd = args.strip()
 	self.do_run(sudo_cmd,True)
         #-----------------------------------------------------------------------------------#
+	# There are 2 ways of doing the sudo you can modify to suit your best 		    #
+	# Read sudo for infomation about using -S -p 					    #
+        #-----------------------------------------------------------------------------------#
     def do_run(self, args,sudoenabled=False):
         """ run/execute command on all the host in the list """
         command = args.strip()
 	if sudoenabled:
-           #fullcmd = "echo " + self.password + " | sudo -k -S -p '' " + command
-           fullcmd = "sudo -k " + command
+           #fullcmd = "echo " + self.password + " | sudo -k -S -p '' su -c \'" + command + "\'"
+           fullcmd = "sudo -k su -c " + "\'" + command + "\'"
 	else:
            fullcmd = command
         if fullcmd and self.connections:
@@ -239,9 +243,11 @@ class RunCommand(cmd.Cmd):
 		channel = conn.open_session()
 		if sudoenabled:
 		   channel.get_pty()
+
 		channel.exec_command(fullcmd)
 		if sudoenabled:
 		   stdin = channel.makefile('wb', -1)
+
                 stdout = channel.makefile('rb', -1)
                 stderr = channel.makefile_stderr('rb', -1)
 		if sudoenabled:
@@ -254,6 +260,11 @@ class RunCommand(cmd.Cmd):
 		    for line in stdout.read().splitlines():
                         print "\t%s" % (line)
                         self.logfile.write("\t" + line + "\n")
+
+		#for line in stdout.read().splitlines():
+                    #print "\t%s" % (line)
+                    #self.logfile.write("\t" + line + "\n")
+
                 for line in stderr.read().splitlines():
                     print "[Error]: \t%s" % (line)
                     self.logfile.write("[Error]:\t" + line + "\n")
