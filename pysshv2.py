@@ -1,4 +1,4 @@
-#!bin/python
+#!/bin/python
 #
 # Original Author: Hiu, Yen-Onn | Email: yenonn@gmail.com
 # Modified version: Farhan Taib | Email: mohdfarhantaib@gmail.com
